@@ -1,4 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterday/constants.dart';
+import 'package:flutterday/details_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -9,12 +12,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Flutter Day App'),
     );
   }
 }
@@ -29,40 +32,63 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  Dio dio = Dio();
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  Future<Response> getData() {
+    return dio.get(BASE_URL);
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+      body: FutureBuilder<Response>(
+        future: getData(),
+        builder:
+            (BuildContext context, AsyncSnapshot<Response<dynamic>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.active:
+            case ConnectionState.waiting:
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+
+            case ConnectionState.none:
+              return Container(
+                child: Text("No data"),
+              );
+
+            case ConnectionState.done:
+              var dataList = snapshot.data.data["posts"];
+
+              return ListView.builder(
+                itemCount: dataList.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Card(
+                    margin:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                    child: ListTile(
+                      onTap: () {
+                        print(dataList[index]["ID"]);
+
+                        Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) {
+                          return DetailsPage(dataList[index]["ID"],dataList[index]["title"]);
+                        }));
+                      },
+                      title: Text("${dataList[index]["title"]}"),
+                    ),
+                  );
+                },
+              );
+
+            default:
+              return Container();
+          }
+        },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
+//
