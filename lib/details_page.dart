@@ -46,6 +46,7 @@ class _DetailsPageState extends State<DetailsPage> {
                 children: [
                   Stack(
                     children: [
+                      Container(height: 320,),
                       Image.network(
                         "${detailsData["featured_image"]}",
                       ),
@@ -54,7 +55,8 @@ class _DetailsPageState extends State<DetailsPage> {
                         right: 0,
                         left: 0,
                         child: Card(
-                          elevation: 10,
+                          elevation: 4,
+                          shadowColor: Colors.black45,
                           margin: EdgeInsets.symmetric(
                               horizontal: 16.0, vertical: 8.0),
                           child: Padding(
